@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Leads CRM</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#F7F5F2;--surface:#FFFFFF;--border:#E8E4DE;--border2:#D4CFC8;
+    --text:#1A2535;--text2:#6B7280;--text3:#A0A0A0;
+    --accent:#1A2535;--amber:#C47F0A;--green:#2E7D50;--red:#B83232;--blue:#1A5FA8;
+    --radius:10px;--radius-sm:7px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
+  .screen{display:none;min-height:100vh;max-width:500px;margin:0 auto;}
+  .screen.active{display:flex;flex-direction:column;}
+  /* LOGIN */
+  .login-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;}
+  .login-logo{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+  .login-title{font-size:26px;font-weight:600;color:var(--text);margin-bottom:32px;letter-spacing:-.02em;}
+  .login-input{width:100%;padding:14px 16px;border:1px solid var(--border2);border-radius:var(--radius);font-size:16px;background:var(--surface);color:var(--text);outline:none;margin-bottom:14px;letter-spacing:.08em;}
+  .login-input:focus{border-color:var(--accent);}
+  .login-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.02em;}
+  .login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;}
+  /* HEADER */
+  .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+  .hdr-back{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:0 12px 0 0;line-height:1;}
+  .hdr-title{font-size:16px;font-weight:600;color:var(--text);flex:1;text-align:center;}
+  .hdr-action{font-size:15px;font-weight:500;color:var(--text);background:none;border:none;cursor:pointer;min-width:44px;text-align:right;}
+  .hdr-plus{font-size:26px;font-weight:300;line-height:1;}
+  /* BODY */
+  .body{flex:1;padding:14px 14px 80px;overflow-y:auto;}
+  /* TABS */
+  .tabs{display:flex;background:var(--surface);border-top:1px solid var(--border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;z-index:50;}
+  .tab{flex:1;padding:11px 4px 9px;text-align:center;cursor:pointer;font-size:11px;font-weight:500;color:var(--text3);border:none;background:none;border-top:2px solid transparent;}
+  .tab.on{color:var(--text);border-top-color:var(--text);}
+  /* CARDS */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px;}
+  .card-tap{cursor:pointer;}
+  .card-tap:active{background:#F0EDE8;}
+  /* METRIC GRID */
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;}
+  .metric-val{font-size:24px;font-weight:600;color:var(--text);}
+  .metric-lbl{font-size:11px;color:var(--text2);margin-top:3px;font-weight:500;}
+  /* BADGES */
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:500;}
+  /* FORM */
+  .flabel{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);display:block;margin-bottom:5px;}
+  .finput{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:15px;color:var(--text);background:var(--surface);outline:none;font-family:inherit;margin-bottom:12px;}
+  .finput:focus{border-color:var(--accent);}
+  select.finput{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+  textarea.finput{resize:vertical;min-height:80px;line-height:1.5;}
+  .fcheck{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .fcheck input{width:18px;height:18px;accent-color:var(--accent);}
+  .fcheck label{font-size:14px;color:var(--text);}
+  .btn-main{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;}
+  .btn-sm{padding:7px 13px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;font-weight:500;background:var(--surface);color:var(--text);cursor:pointer;}
+  .btn-danger{padding:9px 18px;border:1px solid #F0B8B8;border-radius:var(--radius-sm);font-size:13px;font-weight:500;background:#FEF2F2;color:var(--red);cursor:pointer;}
+  /* MISC */
+  .sep{height:1px;background:var(--border);margin:8px 0;}
+  .row{display:flex;justify-content:space-between;align-items:center;}
+  .section-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+  .empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px;}
+  .alert-red{border-left:3px solid var(--red)!important;}
+  .alert-amber{border-left:3px solid var(--amber)!important;}
+  .deal-bar{width:3px;border-radius:3px;align-self:stretch;flex-shrink:0;}
+  .pipe-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+  .pipe-row:last-child{border-bottom:none;}
+  .pipe-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .search{width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--radius);font-size:15px;background:var(--surface);color:var(--text);outline:none;margin-bottom:13px;font-family:inherit;}
+  .search:focus{border-color:var(--accent);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="s-login">
+  <div class="login-wrap">
+    <div class="login-logo">Renovation Leads</div>
+    <div class="login-title">Sign in</div>
+    <input class="login-input" id="pw-input" type="password" placeholder="Password" autocomplete="current-password" />
+    <button class="login-btn" onclick="doLogin()">Enter</button>
+    <div class="login-err" id="pw-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="s-dash">
+  <div class="hdr">
+    <div style="width:44px"></div>
+    <div class="hdr-title">Dashboard</div>
+    <button class="hdr-action hdr-plus" onclick="openNewContact('dash')">+</button>
+  </div>
+  <div class="body" id="dash-body"></div>
+  <div class="tabs">
+    <button class="tab on" id="tab-dash" onclick="go('dash')">Dashboard</button>
+    <button class="tab" id="tab-contacts" onclick="go('contacts')">Contacts</button>
+  </div>
+</div>
+
+<!-- CONTACTS -->
+<div class="screen" id="s-contacts">
+  <div class="hdr">
+    <div style="width:44px"></div>
+    <div class="hdr-title">Contacts</div>
+    <button class="hdr-action hdr-plus" onclick="go('add-contact')">+</button>
+  </div>
+  <div class="body">
+    <input class="search" id="search-input" placeholder="Search name, mobile, address..." oninput="renderContacts()" />
+    <div id="contacts-list"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab" id="tab-dash2" onclick="go('dash')">Dashboard</button>
+    <button class="tab on" id="tab-contacts2" onclick="go('contacts')">Contacts</button>
+  </div>
+</div>
+
+<!-- CONTACT DETAIL -->
+<div class="screen" id="s-detail">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('contacts')">←</button>
+    <div class="hdr-title" id="detail-title"></div>
+    <button class="hdr-action" onclick="editCurrentContact()">Edit</button>
+  </div>
+  <div class="body" id="detail-body"></div>
+</div>
+
+<!-- ADD/EDIT CONTACT -->
+<div class="screen" id="s-add-contact">
+  <div class="hdr">
+    <button class="hdr-back" id="contact-form-back" onclick="go('contacts')">←</button>
+    <div class="hdr-title" id="contact-form-title">New contact</div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="body">
+    <input type="hidden" id="cf-id" />
+    <label class="flabel" style="font-size:12px;color:var(--text)">Lead status *</label>
+    <select class="finput" id="cf-status" style="font-weight:500;margin-bottom:16px">
+      <option value="">Select status...</option>
+      <option>New Lead</option>
+      <option>Lead Met</option>
+      <option>Proposal Sent</option>
+      <option>Proposal Reviewed</option>
+      <option>Negotiation</option>
+      <option>Closed Won</option>
+      <option>Closed Lost - Nurture</option>
+    </select>
+    <label class="flabel" style="font-size:12px;color:var(--text)">Project type</label>
+    <select class="finput" id="cf-project-type" style="font-weight:500;margin-bottom:16px">
+      <option value="">Select project type...</option>
+      <option>Kitchen Remodel</option>
+      <option>Bathroom Remodel</option>
+      <option>ADU</option>
+      <option>Room Addition</option>
+      <option>Roof Replacement</option>
+      <option>Deck / Patio / Outdoor Living</option>
+      <option>Seismic Retrofit</option>
+      <option>Flooring</option>
+      <option>Electrical / Panel Upgrade</option>
+      <option>Full Home Remodel</option>
+    </select>
+    <label class="flabel">First name</label>
+    <input class="finput" id="cf-first" type="text" placeholder="First name" />
+    <label class="flabel">Last name</label>
+    <input class="finput" id="cf-last" type="text" placeholder="Last name" />
+    <label class="flabel">Spouse / partner name</label>
+    <input class="finput" id="cf-spouse" type="text" placeholder="Optional" />
+    <label class="flabel">Mobile</label>
+    <input class="finput" id="cf-mobile" type="tel" placeholder="(415) 555-0000" />
+    <label class="flabel">Email</label>
+    <input class="finput" id="cf-email" type="email" placeholder="email@example.com" />
+    <label class="flabel">Address</label>
+    <input class="finput" id="cf-address" type="text" placeholder="Street, City" />
+    <label class="flabel">Last contacted</label>
+    <input class="finput" id="cf-last-contacted" type="date" />
+    <label class="flabel">Next follow-up date</label>
+    <input class="finput" id="cf-followup" type="date" />
+    <div class="fcheck">
+      <input type="checkbox" id="cf-financing" />
+      <label for="cf-financing">Financing available</label>
+    </div>
+    <label class="flabel">Notes</label>
+    <textarea class="finput" id="cf-notes" placeholder="Meeting notes, observations..."></textarea>
+    <button class="btn-main" onclick="saveContact()">Save contact</button>
+    <div style="height:12px"></div>
+    <div style="text-align:center" id="cf-delete-wrap">
+      <button class="btn-danger" onclick="deleteCurrentContact()">Delete contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT DEAL -->
+<div class="screen" id="s-add-deal">
+  <div class="hdr">
+    <button class="hdr-back" id="deal-form-back">←</button>
+    <div class="hdr-title" id="deal-form-title">New deal</div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="body">
+    <input type="hidden" id="df-id" />
+    <input type="hidden" id="df-contact-id" />
+    <div id="df-contact-name" style="font-size:13px;color:var(--text2);margin-bottom:14px;"></div>
+    <label class="flabel" style="font-size:12px;color:var(--text)">Project type *</label>
+    <select class="finput" id="df-type" style="font-weight:500;border-color:var(--border2)">
+      <option value="">Select project type...</option>
+      <option>Kitchen Remodel</option>
+      <option>Bathroom Remodel</option>
+      <option>ADU</option>
+      <option>Room Addition</option>
+      <option>Roof Replacement</option>
+      <option>Deck / Patio / Outdoor Living</option>
+      <option>Seismic Retrofit</option>
+      <option>Flooring</option>
+      <option>Electrical / Panel Upgrade</option>
+      <option>Full Home Remodel</option>
+    </select>
+    <label class="flabel">Deal stage</label>
+    <select class="finput" id="df-stage" onchange="toggleDealFields()">
+      <option>New Lead</option>
+      <option>Lead Met</option>
+      <option>Proposal Sent</option>
+      <option>Proposal Reviewed</option>
+      <option>Negotiation</option>
+      <option>Closed Won</option>
+      <option>Closed Lost - Nurture</option>
+    </select>
+
+    <label class="flabel">Project scope</label>
+    <select class="finput" id="df-scope">
+      <option value="">Select...</option>
+      <option>Single Room / Focused</option>
+      <option>Multi-Room</option>
+      <option>Whole Home</option>
+    </select>
+    <label class="flabel">Upsell potential</label>
+    <select class="finput" id="df-upsell">
+      <option value="">Select...</option>
+      <option>High</option>
+      <option>Medium</option>
+      <option>Low</option>
+    </select>
+    <div class="fcheck">
+      <input type="checkbox" id="df-proposal" />
+      <label for="df-proposal">Proposal submitted</label>
+    </div>
+    <label class="flabel">Proposal amount ($)</label>
+    <input class="finput" id="df-amount" type="number" placeholder="0" />
+    <div id="df-lost-wrap" style="display:none">
+      <label class="flabel">Lost reason</label>
+      <select class="finput" id="df-lost">
+        <option value="">Select...</option>
+        <option>Chose competitor</option>
+        <option>Price too high</option>
+        <option>Postponed decision</option>
+        <option>No response</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div id="df-closed-wrap" style="display:none">
+      <label class="flabel">Closed — project details</label>
+      <textarea class="finput" id="df-closed" placeholder="What was agreed..."></textarea>
+    </div>
+    <button class="btn-main" onclick="saveDeal()">Save deal</button>
+    <div style="height:12px"></div>
+    <div style="text-align:center" id="df-delete-wrap">
+      <button class="btn-danger" onclick="deleteCurrentDeal()">Delete deal</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERED LIST -->
+<div class="screen" id="s-filtered">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('dash')">←</button>
+    <div class="hdr-title" id="filtered-title">Contacts</div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="body" id="filtered-list"></div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const PASSWORD = "Renov2025"; // change here to update password
+
+// ── STAGE COLORS ────────────────────────────────────────
+const SC = {
+  "New Lead":             "#4CAF50",
+  "Lead Met":"#888780",
+  "Proposal Sent":"#1A5FA8",
+  "Proposal Reviewed":"#7F77DD",
+  "Negotiation":"#C47F0A",
+  "Closed Won":"#2E7D50",
+  "Closed Lost - Nurture":"#B83232"
+};
+
+const PC = {
+  "Kitchen Remodel":      { bg:"#FFF3E0", border:"#FFB74D", text:"#7B3F00" },
+  "Bathroom Remodel":     { bg:"#E3F2FD", border:"#64B5F6", text:"#0D3B6E" },
+  "ADU":                  { bg:"#E8F5E9", border:"#66BB6A", text:"#1B5E20" },
+  "Room Addition":        { bg:"#F3E5F5", border:"#BA68C8", text:"#4A148C" },
+  "Roof Replacement":     { bg:"#ECEFF1", border:"#90A4AE", text:"#263238" },
+  "Deck / Patio / Outdoor Living": { bg:"#E0F7FA", border:"#4DD0E1", text:"#004D40" },
+  "Seismic Retrofit":     { bg:"#FBE9E7", border:"#FF8A65", text:"#7B1F1F" },
+  "Flooring":             { bg:"#FFF8E1", border:"#FFD54F", text:"#5D4037" },
+  "Electrical / Panel Upgrade": { bg:"#FFFDE7", border:"#FFF176", text:"#5D4037" },
+  "Full Home Remodel":    { bg:"#FCE4EC", border:"#F48FB1", text:"#880E4F" }
+};
+
+// ── DATA ────────────────────────────────────────────────
+function loadData() {
+  try {
+    const c = localStorage.getItem("crm_contacts");
+    const d = localStorage.getItem("crm_deals");
+    return {
+      contacts: c ? JSON.parse(c) : [],
+      deals: d ? JSON.parse(d) : []
+    };
+  } catch { return { contacts:[], deals:[] }; }
+}
+function saveData() {
+  localStorage.setItem("crm_contacts", JSON.stringify(DB.contacts));
+  localStorage.setItem("crm_deals", JSON.stringify(DB.deals));
+}
+let DB = loadData();
+let activeContactId = null;
+let activeDealId = null;
+
+// ── UTILS ────────────────────────────────────────────────
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const today = () => new Date().toISOString().slice(0,10);
+const fmt = d => d ? new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "—";
+const isOver = d => d && d < today();
+const isDue = d => d && d === today();
+const $ = id => document.getElementById(id);
+
+// ── AUTH ─────────────────────────────────────────────────
+function doLogin() {
+  if ($("pw-input").value === PASSWORD) {
+    sessionStorage.setItem("crm_auth","1");
+    go("dash");
+  } else {
+    $("pw-err").textContent = "Incorrect password.";
+    $("pw-input").value = "";
+    $("pw-input").focus();
+  }
+}
+$("pw-input").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
+
+// ── NAVIGATION ───────────────────────────────────────────
+const screens = ["login","dash","contacts","detail","add-contact","add-deal","filtered"];
+function go(name, cid) {
+  if (name !== "login" && !sessionStorage.getItem("crm_auth")) { go("login"); return; }
+  if (cid !== undefined) activeContactId = cid;
+  screens.forEach(s => {
+    const el = $("s-"+s);
+    if (el) el.classList.toggle("active", s === name);
+  });
+  if (name === "dash") renderDash();
+  if (name === "contacts") { activeFilter = null; renderContacts(); }
+  if (name === "detail") renderDetail();
+  // tab highlight
+  ["tab-dash","tab-dash2"].forEach(t => { const el=$(t); if(el) el.className="tab"+(name==="dash"?" on":""); });
+  ["tab-contacts","tab-contacts2"].forEach(t => { const el=$(t); if(el) el.className="tab"+(name==="contacts"?" on":""); });
+  window.scrollTo(0,0);
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+function renderDash() {
+  const followUps = DB.contacts
+    .filter(c => c.nextFollowUpDate && (isOver(c.nextFollowUpDate) || isDue(c.nextFollowUpDate)))
+    .sort((a,b) => a.nextFollowUpDate.localeCompare(b.nextFollowUpDate));
+
+  const allFollowUps = DB.contacts
+    .filter(c => c.nextFollowUpDate)
+    .sort((a,b) => a.nextFollowUpDate.localeCompare(b.nextFollowUpDate));
+
+  const stages = ["New Lead","Lead Met","Proposal Sent","Proposal Reviewed","Negotiation","Closed Won","Closed Lost - Nurture"];
+  const won = DB.contacts.filter(c=>c.status==="Closed Won").length;
+  const nurture = DB.contacts.filter(c=>c.status==="Closed Lost - Nurture").length;
+
+  const mStyle = "cursor:pointer;user-select:none;";
+  let html = `
+    <button onclick="openNewContact('dash')" style="width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;margin-bottom:14px;font-family:inherit;letter-spacing:.01em">+ Add new lead</button>
+    <div class="metrics">
+      <div class="metric" style="${mStyle}" onclick="goFiltered('all')">
+        <div class="metric-val">${DB.contacts.length}</div>
+        <div class="metric-lbl">Total contacts</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">View all →</div>
+      </div>
+      <div class="metric" style="${mStyle}" onclick="goFiltered('won')">
+        <div class="metric-val" style="color:var(--green)">${won}</div>
+        <div class="metric-lbl">Closed won</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">View list →</div>
+      </div>
+      <div class="metric" style="${mStyle}" onclick="goFiltered('nurture')">
+        <div class="metric-val" style="color:var(--amber)">${nurture}</div>
+        <div class="metric-lbl">Nurture list</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">View list →</div>
+      </div>
+      <div class="metric" style="${mStyle}" onclick="goFiltered('followups')">
+        <div class="metric-val" style="color:${followUps.length>0?'var(--red)':allFollowUps.length>0?'var(--amber)':'var(--text3)'}">${allFollowUps.length}</div>
+        <div class="metric-lbl">Follow-ups</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">${followUps.length>0?`${followUps.length} overdue →`:"View all →"}</div>
+      </div>
+    </div>`;
+
+  if (followUps.length > 0) {
+    html += `<div class="section-lbl" style="margin-top:4px">Follow-ups due</div>`;
+    followUps.forEach(c => {
+      const over = isOver(c.nextFollowUpDate);
+      const pc = c.projectType && PC[c.projectType];
+      const cardBg = pc ? `background:${pc.bg};` : "";
+      html += `<div class="card card-tap ${over?'alert-red':'alert-amber'}" style="${cardBg}" onclick="go('detail','${c.id}')">
+        <div class="row">
+          <div>
+            <div style="font-weight:600;color:${pc?pc.text:'var(--text)'}">${c.firstName} ${c.lastName}</div>
+            ${c.projectType?`<div style="font-size:11px;font-weight:600;color:${pc?pc.text:'var(--text2)'};margin-top:2px">${c.projectType}</div>`:""}
+            <div style="font-size:12px;color:${over?'var(--red)':'var(--amber)'};margin-top:2px;font-weight:500">${over?"Overdue":"Today"}: ${fmt(c.nextFollowUpDate)}</div>
+          </div>
+          <span style="color:var(--text3)">→</span>
+        </div>
+      </div>`;
+    });
+    html += `<div style="height:8px"></div>`;
+  }
+
+  html += `<div class="section-lbl">Pipeline overview</div><div class="card">`;
+  stages.forEach(stage => {
+    const n = DB.contacts.filter(c=>c.status===stage).length;
+    html += `<div class="pipe-row" style="cursor:pointer" onclick="goFiltered('stage:${stage}')">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div class="pipe-dot" style="background:${SC[stage]}"></div>
+        <span style="font-size:13px">${stage}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:13px;font-weight:600;color:${n>0?'var(--text)':'var(--text3)'}">${n}</span>
+        ${n>0?`<span style="font-size:11px;color:var(--text3)">→</span>`:""}
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  $("dash-body").innerHTML = html;
+}
+
+// ── CONTACTS LIST ────────────────────────────────────────
+function renderContacts() {
+  const q = ($("search-input")||{value:""}).value.toLowerCase();
+  let list = DB.contacts.filter(c =>
+    !q || [c.firstName,c.lastName,c.mobile,c.address].some(v=>v&&v.toLowerCase().includes(q))
+  ).sort((a,b) => {
+    if (isOver(a.nextFollowUpDate) !== isOver(b.nextFollowUpDate)) return isOver(a.nextFollowUpDate)?-1:1;
+    return (a.lastName||"").localeCompare(b.lastName||"");
+  });
+
+  if (!list.length) {
+    $("contacts-list").innerHTML = `<div class="empty">${q?"No results.":"No contacts yet. Tap + to add one."}</div>`;
+    return;
+  }
+  let html = "";
+  list.forEach(c => {
+    const cd = DB.deals.filter(d=>d.contactId===c.id);
+    const ld = cd[cd.length-1];
+    const over = isOver(c.nextFollowUpDate), due = isDue(c.nextFollowUpDate);
+    const pc = c.projectType && PC[c.projectType];
+    const cardBg = pc ? `background:${pc.bg};border-color:${pc.border};` : "";
+    html += `<div class="card card-tap ${over?'alert-red':due?'alert-amber':''}" style="${cardBg}" onclick="go('detail','${c.id}')">
+      <div class="row">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+            <div style="font-weight:600;color:${pc?pc.text:'var(--text)'}">${c.firstName} ${c.lastName}</div>
+            ${c.status?`<span class="badge" style="background:${SC[c.status]||'#888'};font-size:10px;padding:2px 8px">${c.status}</span>`:""}
+          </div>
+          ${c.mobile?`<div style="font-size:12px;color:${pc?pc.text:'var(--text2)'};opacity:0.75;margin-top:1px">${c.mobile}</div>`:""}
+          ${c.projectType?`<div style="font-size:11px;font-weight:600;color:${pc?pc.text:'var(--text)'};margin-top:4px">${c.projectType}</div>`:ld&&ld.projectType?`<div style="font-size:11px;color:var(--text3);margin-top:4px">${ld.projectType}</div>`:""}
+          ${c.nextFollowUpDate?`<div style="font-size:11px;margin-top:5px;color:${over?'var(--red)':due?'var(--amber)':'var(--text3)'};font-weight:${(over||due)?600:400}">Follow-up: ${fmt(c.nextFollowUpDate)}</div>`:""}
+        </div>
+        <span style="color:${pc?pc.text:'var(--text3)'};opacity:0.5;padding-left:8px">→</span>
+      </div>
+    </div>`;
+  });
+  $("contacts-list").innerHTML = html;
+}
+function renderDetail() {
+  const c = DB.contacts.find(x=>x.id===activeContactId);
+  if (!c) { go("contacts"); return; }
+  $("detail-title").textContent = c.firstName+" "+c.lastName;
+  const cd = DB.deals.filter(d=>d.contactId===c.id);
+  const over = isOver(c.nextFollowUpDate), due = isDue(c.nextFollowUpDate);
+
+  let html = `<div class="card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      ${c.status?`<span class="badge" style="background:${SC[c.status]||'#888'};font-size:12px;padding:4px 12px">${c.status}</span>`:`<span style="font-size:12px;color:var(--text3)">No status set</span>`}
+      ${c.projectType?`<span class="tag" style="background:#F0EDE8;color:var(--text);font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border2)">${c.projectType}</span>`:""}
+    </div>
+    ${c.spouseName?`<div style="font-size:13px;color:var(--text2);margin-bottom:5px">+ ${c.spouseName}</div>`:""}
+    ${c.mobile?`<div style="font-size:14px;margin-bottom:4px">${c.mobile}</div>`:""}
+    ${c.email?`<div style="font-size:13px;color:var(--blue);margin-bottom:4px">${c.email}</div>`:""}
+    ${c.address?`<div style="font-size:13px;color:var(--text2);margin-bottom:4px">${c.address}</div>`:""}
+    ${c.financingAvailable?`<span class="tag" style="background:#D1FAE5;color:#065F46;margin-top:4px;display:inline-block">Financing available</span>`:""}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+    <div class="card">
+      <div class="flabel">Last contacted</div>
+      <div style="font-size:13px">${fmt(c.lastContactedDate)}</div>
+    </div>
+    <div class="card ${over?'alert-red':due?'alert-amber':''}">
+      <div class="flabel">Next follow-up</div>
+      <div style="font-size:13px;font-weight:${(over||due)?600:400};color:${over?'var(--red)':due?'var(--amber)':'var(--text)'}">${fmt(c.nextFollowUpDate)}</div>
+    </div>
+  </div>`;
+
+  if (c.notes) {
+    html += `<div class="card" style="margin-bottom:10px">
+      <div class="flabel">Notes</div>
+      <div style="font-size:13px;line-height:1.6;white-space:pre-wrap">${escHtml(c.notes)}</div>
+    </div>`;
+  }
+
+  html += `<div class="row" style="margin-bottom:8px">
+    <div class="section-lbl" style="margin-bottom:0">Deals (${cd.length})</div>
+    <button class="btn-sm" onclick="openNewDeal('${c.id}')">+ New deal</button>
+  </div>`;
+
+  if (!cd.length) html += `<div class="empty" style="padding:20px 0">No deals yet.</div>`;
+
+  cd.forEach(deal => {
+    const isClosed = deal.dealStage === "Closed Won";
+    const isLost = deal.dealStage === "Closed Lost - Nurture";
+    const closedLabel = isClosed
+      ? `<span class="tag" style="background:#D1FAE5;color:var(--green);font-weight:600">Closed Won ✓</span>`
+      : isLost
+      ? `<span class="tag" style="background:#FEE2E2;color:var(--red);font-weight:600">Not Closed ✗</span>`
+      : `<span class="tag" style="background:#F3F4F6;color:var(--text2)">In Progress</span>`;
+    html += `<div class="card" style="border-left:3px solid ${SC[deal.dealStage]||'#888'}">
+      <div class="row" style="margin-bottom:10px">
+        <span class="badge" style="background:${SC[deal.dealStage]||'#888'}">${deal.dealStage}</span>
+        <button class="btn-sm" onclick="openEditDeal('${deal.id}')">Edit</button>
+      </div>
+      <div style="margin-bottom:8px">${closedLabel}</div>
+      ${deal.projectType?`<div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:3px">${deal.projectType}</div>`:`<div style="font-size:13px;color:var(--text3);margin-bottom:3px;font-style:italic">No project type selected</div>`}
+      ${deal.projectScope?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">${deal.projectScope}</div>`:""}
+      <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;align-items:center">
+        ${deal.proposalAmount?`<span style="font-size:13px;font-weight:600;color:var(--green)">$${Number(deal.proposalAmount).toLocaleString()}</span>`:""}
+        ${deal.upsellPotential?`<span style="font-size:11px;color:var(--text2)">Upsell: ${deal.upsellPotential}</span>`:""}
+        ${deal.proposalSubmitted?`<span class="tag" style="background:#EFF6FF;color:var(--blue)">Proposal sent</span>`:""}
+      </div>
+      ${deal.lostReason?`<div style="font-size:12px;color:var(--red);margin-top:6px;font-weight:500">Lost reason: ${deal.lostReason}</div>`:""}
+      ${deal.closedProjectDetails?`<div style="font-size:12px;color:var(--green);margin-top:6px;line-height:1.5">${escHtml(deal.closedProjectDetails)}</div>`:""}
+    </div>`;
+  });
+
+  html += `<div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
+    <button class="btn-danger" onclick="deleteContact('${c.id}')">Delete contact</button>
+  </div>`;
+
+  $("detail-body").innerHTML = html;
+  // back button: if came from filtered view, go back there
+  document.querySelector('#s-detail .hdr-back').onclick = () => {
+    if (activeFilter) goFiltered(activeFilter);
+    else go('contacts');
+  };
+}
+
+// ── CONTACT FORM ─────────────────────────────────────────
+function openNewContact(from) {
+  originScreen = from || "contacts";
+  ["cf-id","cf-first","cf-last","cf-spouse","cf-mobile","cf-email","cf-address","cf-last-contacted","cf-followup","cf-notes"].forEach(id => $(id).value="");
+  $("cf-status").value = "";
+  $("cf-project-type").value = "";
+  $("cf-financing").checked = false;
+  $("contact-form-title").textContent = "New contact";
+  $("contact-form-back").onclick = () => go(originScreen);
+  $("cf-delete-wrap").style.display = "none";
+  go("add-contact");
+}
+function editCurrentContact() {
+  const c = DB.contacts.find(x=>x.id===activeContactId);
+  if (!c) return;
+  $("cf-id").value = c.id;
+  $("cf-status").value = c.status||"";
+  $("cf-project-type").value = c.projectType||"";
+  $("cf-first").value = c.firstName||"";
+  $("cf-last").value = c.lastName||"";
+  $("cf-spouse").value = c.spouseName||"";
+  $("cf-mobile").value = c.mobile||"";
+  $("cf-email").value = c.email||"";
+  $("cf-address").value = c.address||"";
+  $("cf-last-contacted").value = c.lastContactedDate||"";
+  $("cf-followup").value = c.nextFollowUpDate||"";
+  $("cf-financing").checked = !!c.financingAvailable;
+  $("cf-notes").value = c.notes||"";
+  $("contact-form-title").textContent = "Edit contact";
+  $("contact-form-back").onclick = () => go("detail");
+  $("cf-delete-wrap").style.display = "block";
+  go("add-contact");
+}
+function saveContact() {
+  const id = $("cf-id").value;
+  const obj = {
+    id: id||uid(),
+    status: $("cf-status").value,
+    projectType: $("cf-project-type").value,
+    firstName: $("cf-first").value.trim(),
+    lastName: $("cf-last").value.trim(),
+    spouseName: $("cf-spouse").value.trim(),
+    mobile: $("cf-mobile").value.trim(),
+    email: $("cf-email").value.trim(),
+    address: $("cf-address").value.trim(),
+    lastContactedDate: $("cf-last-contacted").value,
+    nextFollowUpDate: $("cf-followup").value,
+    financingAvailable: $("cf-financing").checked,
+    notes: $("cf-notes").value.trim(),
+    createdAt: id ? (DB.contacts.find(c=>c.id===id)||{}).createdAt : new Date().toISOString()
+  };
+  if (!obj.firstName && !obj.lastName) return alert("Please enter a name.");
+  if (id) {
+    DB.contacts = DB.contacts.map(c => c.id===id ? obj : c);
+    saveData(); activeContactId = id; go("detail");
+  } else {
+    DB.contacts.push(obj);
+    saveData(); go(originScreen);
+  }
+}
+function deleteContact(cid) {
+  if (!confirm("Delete this contact and all their deals?")) return;
+  DB.contacts = DB.contacts.filter(c=>c.id!==cid);
+  DB.deals = DB.deals.filter(d=>d.contactId!==cid);
+  saveData(); go("contacts");
+}
+function deleteCurrentContact() {
+  const c = DB.contacts.find(x=>x.id===($("cf-id").value));
+  if (c) deleteContact(c.id);
+}
+
+// ── DEAL FORM ─────────────────────────────────────────────
+function openNewDeal(cid) {
+  const c = DB.contacts.find(x=>x.id===cid);
+  $("df-id").value = "";
+  $("df-contact-id").value = cid;
+  $("df-contact-name").textContent = c ? "For: "+c.firstName+" "+c.lastName : "";
+  $("df-stage").value = "Lead Met";
+  $("df-type").value = "";
+  $("df-scope").value = "";
+  $("df-upsell").value = "";
+  $("df-proposal").checked = false;
+  $("df-amount").value = "";
+  $("df-lost").value = "";
+  $("df-closed").value = "";
+  $("deal-form-title").textContent = "New deal";
+  $("deal-form-back").onclick = () => { activeContactId=cid; go("detail"); };
+  $("df-delete-wrap").style.display = "none";
+  toggleDealFields();
+  go("add-deal");
+}
+function openEditDeal(did) {
+  const deal = DB.deals.find(d=>d.id===did);
+  if (!deal) return;
+  const c = DB.contacts.find(x=>x.id===deal.contactId);
+  activeDealId = did;
+  $("df-id").value = did;
+  $("df-contact-id").value = deal.contactId;
+  $("df-contact-name").textContent = c ? "For: "+c.firstName+" "+c.lastName : "";
+  $("df-stage").value = deal.dealStage||"Lead Met";
+  $("df-type").value = deal.projectType||"";
+  $("df-scope").value = deal.projectScope||"";
+  $("df-upsell").value = deal.upsellPotential||"";
+  $("df-proposal").checked = !!deal.proposalSubmitted;
+  $("df-amount").value = deal.proposalAmount||"";
+  $("df-lost").value = deal.lostReason||"";
+  $("df-closed").value = deal.closedProjectDetails||"";
+  $("deal-form-title").textContent = "Edit deal";
+  $("deal-form-back").onclick = () => { activeContactId=deal.contactId; go("detail"); };
+  $("df-delete-wrap").style.display = "block";
+  toggleDealFields();
+  go("add-deal");
+}
+function toggleDealFields() {
+  const stage = $("df-stage").value;
+  $("df-lost-wrap").style.display = stage==="Closed Lost - Nurture" ? "block" : "none";
+  $("df-closed-wrap").style.display = stage==="Closed Won" ? "block" : "none";
+}
+function saveDeal() {
+  const id = $("df-id").value;
+  const cid = $("df-contact-id").value;
+  if (!$("df-type").value) return alert("Please select a project type.");
+  const obj = {
+    id: id||uid(),
+    contactId: cid,
+    dealStage: $("df-stage").value,
+    projectType: $("df-type").value,
+    projectScope: $("df-scope").value,
+    upsellPotential: $("df-upsell").value,
+    proposalSubmitted: $("df-proposal").checked,
+    proposalAmount: $("df-amount").value,
+    lostReason: $("df-lost").value,
+    closedProjectDetails: $("df-closed").value,
+    createdAt: id ? (DB.deals.find(d=>d.id===id)||{}).createdAt : new Date().toISOString()
+  };
+  if (id) DB.deals = DB.deals.map(d=>d.id===id ? obj : d);
+  else DB.deals.push(obj);
+  saveData(); activeContactId=cid; go("detail");
+}
+function deleteCurrentDeal() {
+  const id = $("df-id").value;
+  const cid = $("df-contact-id").value;
+  if (!id || !confirm("Delete this deal?")) return;
+  DB.deals = DB.deals.filter(d=>d.id!==id);
+  saveData(); activeContactId=cid; go("detail");
+}
+
+// ── FILTERED VIEW ────────────────────────────────────────
+let activeFilter = null;
+let originScreen = "contacts";
+const filterLabels = {
+  all: "All contacts",
+  won: "Closed Won",
+  nurture: "Nurture list",
+  followups: "Follow-up tasks"
+};
+
+function goFiltered(filter) {
+  activeFilter = filter;
+  const screen = $("s-filtered");
+  let label = filterLabels[filter] || filter;
+  if (filter.startsWith("stage:")) label = filter.replace("stage:","");
+  $("filtered-title").textContent = label;
+  renderFiltered();
+  screens.forEach(s => { const el=$("s-"+s); if(el) el.classList.remove("active"); });
+  screen.classList.add("active");
+  window.scrollTo(0,0);
+}
+
+function renderFiltered() {
+  let list = [];
+  if (activeFilter === "all") {
+    list = [...DB.contacts].sort((a,b)=>(a.lastName||"").localeCompare(b.lastName||""));
+  } else if (activeFilter === "won") {
+    list = DB.contacts.filter(c=>c.status==="Closed Won").sort((a,b)=>(a.lastName||"").localeCompare(b.lastName||""));
+  } else if (activeFilter === "nurture") {
+    list = DB.contacts.filter(c=>c.status==="Closed Lost - Nurture").sort((a,b)=>(a.lastName||"").localeCompare(b.lastName||""));
+  } else if (activeFilter === "followups") {
+    list = DB.contacts
+      .filter(c => c.nextFollowUpDate)
+      .sort((a,b) => a.nextFollowUpDate.localeCompare(b.nextFollowUpDate));
+  } else if (activeFilter && activeFilter.startsWith("stage:")) {
+    const stage = activeFilter.replace("stage:","");
+    list = DB.contacts.filter(c=>c.status===stage).sort((a,b)=>(a.lastName||"").localeCompare(b.lastName||""));
+  }
+
+  if (!list.length) {
+    $("filtered-list").innerHTML = `<div class="empty">No contacts in this category.</div>`;
+    return;
+  }
+
+  let html = "";
+  list.forEach(c => {
+    const over = isOver(c.nextFollowUpDate), due = isDue(c.nextFollowUpDate);
+    const upcoming = !over && !due;
+    const pc = c.projectType && PC[c.projectType];
+    const cardBg = pc ? `background:${pc.bg};border-color:${pc.border};` : "";
+    const dateColor = over ? "var(--red)" : due ? "var(--amber)" : "var(--text2)";
+    const datePrefix = over ? "Overdue" : due ? "Today" : "Scheduled";
+    const dateWeight = (over||due) ? 600 : 400;
+    const leftBorder = over ? "border-left:3px solid var(--red)!important;"
+                     : due  ? "border-left:3px solid var(--amber)!important;"
+                     :        "border-left:3px solid #C8E6C9!important;";
+    html += `<div class="card card-tap" style="${cardBg}${leftBorder}" onclick="go('detail','${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <div style="font-weight:600;font-size:15px;color:${pc?pc.text:'var(--text)'}">${c.firstName} ${c.lastName}</div>
+            ${c.status?`<span class="badge" style="background:${SC[c.status]||'#888'};font-size:10px;padding:2px 8px">${c.status}</span>`:""}
+          </div>
+          ${c.projectType?`<div style="font-size:12px;font-weight:600;color:${pc?pc.text:'var(--text)'};margin-bottom:5px">${c.projectType}</div>`:""}
+          <div style="font-size:12px;font-weight:${dateWeight};color:${dateColor}">${datePrefix}: ${fmt(c.nextFollowUpDate)}</div>
+        </div>
+        <span style="color:var(--text3);padding-left:8px;font-size:14px">→</span>
+      </div>
+    </div>`;
+  });
+  $("filtered-list").innerHTML = html;
+}
+
+// ── HELPERS ──────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── OVERRIDE + BUTTON ────────────────────────────────────
+document.querySelector('#s-contacts .hdr-plus').addEventListener('click', openNewContact);
+
+// ── INIT ─────────────────────────────────────────────────
+if (sessionStorage.getItem("crm_auth")) go("dash");
+</script>
+</body>
+</html>
